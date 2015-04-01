@@ -4,6 +4,7 @@ class Flashcard < ActiveRecord::Base
   belongs_to :category
 
   def to_s
-    "QUESTION: #{front} \nANSWER: #{back}"
+    "QUESTION: #{front} \n|ANSWER: #{back}"
+
   end
 end

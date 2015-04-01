@@ -6,10 +6,10 @@ Category.destroy_all
 Flashcard.destroy_all
 
 Category.create([
-  {name: "Movies", score:0},
-  {name: "Music", score:0},
-  {name: "Literature", score:0},
-  {name: "History", score:0}
+  {name: "Movies", score:0, active_test: false},
+  {name: "Music", score:0, active_test: false},
+  {name: "Literature", score:0, active_test: false},
+  {name: "History", score:0, active_test: false}
   ])
 
 movies = Category.find_by(name: "Movies")
