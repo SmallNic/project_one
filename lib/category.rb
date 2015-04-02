@@ -1,7 +1,7 @@
 class Category < ActiveRecord::Base
   has_many :flashcards, dependent: :destroy
 
-  validates :name, uniqueness: {message: "must be unique."}
+  validates :name, uniqueness: {message: "must be already exists. Try again."}
   validates :name, presence: {message: "must be entered."}
 
   HUMANIZED_ATTRIBUTES = {
@@ -19,6 +19,18 @@ class Category < ActiveRecord::Base
     return name + spaces + "|"
     # name
   end
+
+  def set_status_to(status)
+    self.active_test = status
+    self.save
+  end
+
+  def activate
+    self.set_status_to(true)
+    self.score = 0
+    self.save
+  end
+
 
   # def print_all
   #   puts"-------------------Categories-------------------"
