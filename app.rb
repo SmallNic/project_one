@@ -6,7 +6,7 @@ require_relative 'db/connection'
 require_relative 'lib/category'
 require_relative 'lib/flashcard'
 
-
+# binding.pry
 def clear
   system("clear")
 end
@@ -17,32 +17,40 @@ def get_user_input(message)
 end
 
 def create_new_category
-  Category.create(get_new_category_info)
-end
-
-def get_new_category_info
-  new_flash_category = get_user_input("\nWhat should the new category be?").downcase.capitalize
-  return {name:new_flash_category, score:0}
+  new_category_from_user = get_user_input("\nWhat should the new category be?").downcase.capitalize
+  new_category = Category.new(name:new_category_from_user, score:0)
+  if new_category.valid?
+    new_category.save
+    puts "New category - #{new_category.name} - created."
+  else
+    new_category.errors.full_messages
+  end
 end
 
 def create_new_flashcard
   print_all_categories
-  Flashcard.create(get_new_flashcard_info)
+  new_flashcard = get_new_flashcard_info
+  if new_flashcard.valid?
+    new_flashcard.save
+  else
+    puts new_flashcard.errors.full_messages
+  end
+
 end
 
 def get_new_flashcard_info
-  new_flash_category = get_user_input("\nChoose a category.").downcase.capitalize
+  new_flash_category = get_user_input("\nWhat should the category be?").downcase.capitalize
   new_flash_question = get_user_input("\nWhat should the question be?")
-  #Add validation error if question is not unique
   new_flash_answer = get_user_input("\nWhat is the answer?")
-  return {front:new_flash_question, back:new_flash_answer, status:"Unanswered", category_id:Category.find_by(name:new_flash_category).id}
+  new_flashcard = Flashcard.new(front:new_flash_question, back:new_flash_answer, status:"Unanswered", user_answer: "n/a", category_id:Category.find_by(name:new_flash_category).id)
+  return new_flashcard
 end
 
 def print_flashcards_for_a_category
   print_all_categories
   card_category = get_user_input("\nChoose a category.").downcase.capitalize
   category_id = Category.find_by(name:card_category).id
-  print_all_flashcards(Flashcard.where(category_id:category_id))
+  print_selected_flashcards(Flashcard.where(category_id:category_id))
   return(Flashcard.where(category_id:category_id))
 end
 
@@ -52,12 +60,11 @@ def print_all_categories
   puts"------------------------------------------------"
 end
 
-def print_all_flashcards(flashcards_to_print)
+def print_selected_flashcards(flashcards_to_print)
   counter = 1
   flashcards_to_print.all.each do |flashcard|
-    puts "_" * terminal_size()[0]
-    puts "#{counter}. #{flashcard}"
-    puts "-" * terminal_size()[0]
+    puts "#{counter}:"
+    puts "#{flashcard}"
     counter += 1
   end
   if counter == 1
@@ -105,45 +112,38 @@ while true
   when 2
     clear
     titleize(" VIEW ALL FLASHCARDS ")
-    print_all_flashcards(Flashcard.all)
-    # Flashcard.print_selection
+    print_selected_flashcards(Flashcard.all)
 
   when 3
     clear
     titleize(" EDIT FLASHCARD ")
+    print_all_categories
+    selected_category = Category.find_by(name:get_user_input("\nChoose a category.").downcase.capitalize)
+    selected_flashcards = Flashcard.where(category_id:selected_category.id)
+    print_selected_flashcards(selected_flashcards)
+    card_to_edit = get_user_input("Please enter the number of the flashcard you'd like to edit").to_i
 
-    selected_flashcards = print_flashcards_for_a_category
-
-    puts "Please enter the number of the flashcard you'd like to edit"
-    card_to_edit = gets.chomp.to_i
-
-    puts "Do you want to edit the question? (Yes or No)"
-    if gets.chomp.downcase == "yes"
-      selected_flashcards[card_to_edit-1].front = get_user_input("\nWhat should the question be?")
+    new_flashcard = get_new_flashcard_info
+    if !new_flashcard.valid?
+      puts new_flashcard.errors.full_messages
+    else
+      old_flashcard = selected_flashcards[card_to_edit-1]
+      selected_flashcards[card_to_edit-1] = new_flashcard
+      selected_flashcards[card_to_edit-1].save
+      old_flashcard.destroy
+      puts "\nEdited Flashcard:\n#{selected_flashcards[card_to_edit-1]}"
     end
-
-    puts "Do you want to edit the answer? (Yes or No)"
-    if gets.chomp.downcase == "yes"
-      selected_flashcards[card_to_edit-1].back = get_user_input("\nWhat is the answer?")
-    end
-
-    puts "Do you want to change the category? (Yes or No)"
-    if gets.chomp.downcase == "yes"
-
-      selected_flashcards[card_to_edit-1].category_id = Category.find_by(name:get_user_input("\nChoose a category.").downcase.capitalize).id
-    end
-
-    selected_flashcards[card_to_edit-1].save
-    puts selected_flashcards[card_to_edit-1]
 
   when 4
     clear
     titleize(" DELETE A FLASHCARD ")
 
-    selected_flashcards = print_flashcards_for_a_category
+    print_all_categories
+    selected_category = Category.find_by(name:get_user_input("\nChoose a category.").downcase.capitalize)
+    selected_flashcards = Flashcard.where(category_id:selected_category.id)
+    print_selected_flashcards(selected_flashcards)
+    card_to_edit = get_user_input("Please enter the number of the flashcard you'd like to delete. (Or type 'exit')").to_i
 
-    puts "Please enter the number of the flashcard you'd like to delete"
-    card_to_edit = gets.chomp.to_i
     selected_flashcards[card_to_edit-1].destroy
     puts "Your card has been successfully deleted."
 
@@ -155,7 +155,10 @@ while true
   when 6
     clear
     titleize(" VIEW CARDS BY CATEGORY ")
-    print_flashcards_for_a_category
+    print_all_categories
+    selected_category = Category.find_by(name:get_user_input("\nChoose a category.").downcase.capitalize)
+    selected_flashcards = Flashcard.where(category_id:selected_category.id)
+    print_selected_flashcards(selected_flashcards)
 
   when 7
     clear
@@ -267,7 +270,8 @@ while true
         end
       end
     end
-    puts "You are done with the #{selected_category.name}test! Your current score is #{selected_category.score}"
+    puts "\nYou are done with the #{selected_category.name} test! Your current score is #{selected_category.score} out of #{flashcards_in_category.size}."
+    puts "Your grade is #{((selected_category.score.to_f/flashcards_in_category.size)*100).round}%"
     puts "Try again or try a new test."
 
   when 8
@@ -275,16 +279,13 @@ while true
     titleize(" VIEW SCORE/RECENT ANSWERS ")
 
     print_all_categories
-    puts "For which category would you like to view your score?"
-    category_to_view = gets.chomp.downcase.capitalize
+    selected_category = Category.find_by(name:get_user_input("\nChoose a category.").downcase.capitalize)
+    selected_flashcards = Flashcard.where(category_id:selected_category.id)
 
-    selected_category = Category.find_by(name:category_to_view)
-    flashcards_to_view = Flashcard.where(category_id:selected_category.id)
-
-    puts "\nLast score: #{selected_category.score}"
+    puts "\nLast score: #{selected_category.score}. Grade: #{((selected_category.score.to_f/selected_flashcards.size)*100).round}%."
     puts "Recent answers"
     puts "------------------------------------------------"
-    flashcards_to_view.all.each do |flashcard|
+    selected_flashcards.all.each do |flashcard|
       puts "\nQUESTION: #{flashcard.front}"
       puts "YOUR LAST ANSWER: #{flashcard.user_answer}"
       puts "STATUS: #{flashcard.status}"
