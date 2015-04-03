@@ -311,7 +311,6 @@ while true
       titleize(" EXITED ")
       break
 
-
     end
 
   else
