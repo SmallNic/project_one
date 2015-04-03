@@ -1,5 +1,6 @@
 class Category < ActiveRecord::Base
   has_many :flashcards, dependent: :destroy
+  belongs_to :user
 
   validates :name, uniqueness: {message: "must be already exists. Try again."}
   validates :name, presence: {message: "must be entered."}
@@ -31,11 +32,5 @@ class Category < ActiveRecord::Base
     self.save
   end
 
-
-  # def print_all
-  #   puts"-------------------Categories-------------------"
-  #   puts Category.all
-  #   puts"------------------------------------------------"
-  # end
 
 end

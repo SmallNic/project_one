@@ -1,18 +1,23 @@
 require_relative 'connection'
 require_relative '../lib/category'
 require_relative '../lib/flashcard'
+require_relative '../lib/user'
 
+User.destroy_all
 Category.destroy_all
 Flashcard.destroy_all
 
-Category.create([
+User.create(username:"nicsmall", password:"mydogrocks", email: "nas231@.nyu.edu")
+
+nicsmall = User.find_by(username:"nicsmall")
+
+nicsmall.categories.create([
   {name: "Movies", score:0, active_test: false},
   {name: "Music", score:0, active_test: false},
   {name: "Literature", score:0, active_test: false},
   {name: "History", score:0, active_test: false}
   ])
 
-# Category.create(name: "Movies", score:0, active_test: false)
 movies = Category.find_by(name: "Movies")
 music = Category.find_by(name: "Music")
 literature = Category.find_by(name: "Literature")
