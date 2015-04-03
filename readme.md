@@ -1,6 +1,6 @@
 FlashCards App
 
-We're going to be building a FlashCard management application, which allows a user to create, read, update and delete flashcards.
+This FlashCard management application allows a user to create, read, update and delete flashcards.
 
 Menu:
 When starting the application, the user has the following options:
@@ -39,6 +39,6 @@ Category Spec:
 - has a score
 - belongs to a user
 
-A flashcard may not be blank. If there is a question on one side, there must be an answer on the other. A flashcard does not need to have a category.
+A flashcard may not be blank. If there is a question on the front, there must be an answer on the other. A flashcard must have a category.
 
-When a user tests his or herself, his or her last score is replaced by the new score.
+A user can exit the application and resume his or her test at a later time. If a user does not get a question right, it gets added back into the mix and then asked about again until it is answered correctly or until the user starts a new test. When a user tests his or herself, his or her last score is replaced by the new score.
