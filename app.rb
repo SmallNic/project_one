@@ -7,6 +7,7 @@ require_relative 'db/connection'
 require_relative 'lib/category'
 require_relative 'lib/flashcard'
 require_relative 'lib/user'
+require_relative 'lib/string'
 
 
 # binding.pry
@@ -258,7 +259,7 @@ while true
 
             elsif user_answer.downcase == card.back.downcase
               card.user_answer = user_answer
-              puts "CORRECT!!"
+              puts "CORRECT!!".blue
               card.status = "Correct"
               card.save
 
@@ -267,7 +268,7 @@ while true
 
             else
               card.user_answer = user_answer
-              puts "INCORRECT"
+              puts "INCORRECT".red
               card.status = "Incorrect"
               card.save
             end
@@ -314,7 +315,7 @@ while true
     end
 
   else
-    login_or_signup = get_user_input("1. Login\n2. Create new user account").to_i
+    login_or_signup = get_user_input("1. Login\n2. Create new user account\n3. Exit").to_i
 
     if login_or_signup == 1
       username = get_user_input("Please enter your username")
@@ -325,8 +326,7 @@ while true
           logged_in = true
           current_user = user
           clear
-          puts "Welcome #{current_user}, your last login was at #{current_user.last_login}\n"
-          # current_time = Time.now
+          puts "Welcome #{current_user.username.green}, your last login was at #{current_user.last_login}\n"
           current_user.last_login = Time.now + Time.zone_offset('EST')
           current_user.save
           user_logged_in = true
@@ -335,7 +335,7 @@ while true
       if !logged_in
         puts "Your username and password were incorrect. Please try again."
       end
-    else login_or_signup == 2
+    elsif login_or_signup == 2
       username = get_user_input("Please create a username")
       password = get_user_input("Please create a password")
       email = get_user_input("Please enter your email address")
@@ -346,7 +346,12 @@ while true
       else
         puts current_user.errors.full_messages
       end
+    elsif login_or_signup == 3
+      clear
+      titleize(" EXITED ")
+      break
+    else
+      puts "Invalid entry."
     end
-
   end
 end
